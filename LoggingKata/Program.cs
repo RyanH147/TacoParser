@@ -3,6 +3,7 @@ using System.Linq;
 using System.IO;
 using GeoCoordinatePortable;
 
+
 namespace LoggingKata
 {
     class Program
@@ -27,14 +28,27 @@ namespace LoggingKata
             var parser = new TacoParser();
 
             // Grab an IEnumerable of locations using the Select command: var locations = lines.Select(parser.Parse);
-            var locations = lines.Select(parser.Parse).ToArray();
+            var locations = lines.Select(line => parser.Parse(line)).ToArray();
 
             // DON'T FORGET TO LOG YOUR STEPS
+            if(lines.Length == 0)
+            {
+                logger.LogError("There are 0 lines.", null);
+            }
+            
+            if(lines.Length == 1)
+            {
+                logger.LogWarning("There is only 1 line.");
+            }
 
             // Now that your Parse method is completed, START BELOW ----------
 
             // TODO: Create two `ITrackable` variables with initial values of `null`. These will be used to store your two taco bells that are the farthest from each other.
             // Create a `double` variable to store the distance
+            ITrackable tb1 = new TacoBell();
+            ITrackable tb2 = new TacoBell();
+
+            double distance1 = 0.00;
 
             // Include the Geolocation toolbox, so you can compare locations: `using GeoCoordinatePortable;`
 
@@ -51,8 +65,29 @@ namespace LoggingKata
             // If the distance is greater than the currently saved distance, update the distance and the two `ITrackable` variables you set above
 
             // Once you've looped through everything, you've found the two Taco Bells farthest away from each other.
+            for (int i = 0; i < locations.Length; i++)
+            {
+                var locA = locations[i];
+                var corA = locA.Location;
+                GeoCoordinate loc1 = new GeoCoordinate(corA.Latitude, corA.Longitude);
+                for (int j = 0; j < locations.Length; j++)
+                {
+                    var locB = locations[j];
+                    var corB = locB.Location;
+                    GeoCoordinate loc2 = new GeoCoordinate(corB.Latitude, corB.Longitude);
+                    double distance = loc2.GetDistanceTo(loc1);
+                    if (distance1 < distance)
+                    {
+                        distance1 = distance;
+                        tb1 = locA;
+                        tb2 = locB;
+                    }
+                }
+            }
 
+            logger.LogInfo($"{tb1.Name} and {tb2.Name}");
 
+            Console.WriteLine($"The distance between {tb1.Name} and {tb2.Name} is {distance1}");
             
         }
     }
